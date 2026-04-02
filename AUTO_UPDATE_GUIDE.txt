@@ -1,0 +1,93 @@
+
+╔══════════════════════════════════════════════════════════════════╗
+║   How to Auto-Update Dashboard When Excel Data Changes          ║
+╚══════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ METHOD A — Upload New Excel to GitHub (Simplest)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  HOW IT WORKS:
+  1. Dashboard reads Excel file from GitHub repo
+  2. When you update Excel on GitHub → Render redeploys → data updates
+
+  STEPS:
+  1. Put your Excel file in GitHub repo:
+     github.com/tripathikamleshmani/sirf
+     Upload: SIRF_Inspection_Report.xlsx
+
+  2. In sirf_dashboard.py change data loading to:
+     df = pd.read_excel("SIRF_Inspection_Report.xlsx")
+
+  3. When data changes:
+     → Upload new Excel to GitHub (replace old file)
+     → Render auto-redeploys in 3-5 minutes
+     → Dashboard shows new data automatically
+
+  PROS: Simple, free, no coding needed
+  CONS: Need to manually upload Excel each time
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ METHOD B — Google Sheets (Real-time, Recommended)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  HOW IT WORKS:
+  Dashboard reads data directly from Google Sheets.
+  You update Google Sheet → Dashboard auto-updates in seconds.
+
+  STEPS:
+  1. Upload your Excel to Google Sheets
+     → Go to sheets.google.com → Import Excel
+
+  2. Make it public:
+     File → Share → Anyone with link → Viewer
+
+  3. Get CSV export link:
+     Copy Sheet URL, replace /edit with /export?format=csv
+     Example:
+     https://docs.google.com/spreadsheets/d/YOUR-ID/export?format=csv
+
+  4. In sirf_dashboard.py change data loading to:
+     SHEET_URL = "https://docs.google.com/spreadsheets/d/YOUR-ID/export?format=csv"
+     df = pd.read_csv(SHEET_URL)
+
+  5. Add auto-refresh every 5 minutes:
+     Add dcc.Interval(id="refresh", interval=5*60*1000) to layout
+     Use callback to reload data on interval
+
+  PROS: Real-time updates, no redeploy needed
+  CONS: Data must be in Google Sheets
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ METHOD C — Excel + OneDrive / SharePoint (Office 365)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  HOW IT WORKS:
+  Save Excel to OneDrive → get public CSV link →
+  Dashboard reads from OneDrive link automatically.
+
+  STEPS:
+  1. Save Excel to OneDrive
+  2. Right-click → Share → Anyone with link
+  3. Change the share URL to download link
+  4. In dashboard:
+     df = pd.read_excel("https://onedrive.live.com/download?...")
+
+  PROS: Works with existing Excel workflow
+  CONS: OneDrive link setup is slightly complex
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ BEST RECOMMENDATION FOR YOU
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  For SIRF Inspection data (updated once per inspection cycle):
+  → Use METHOD A (GitHub Excel upload)
+    Simplest, free, data updates in 5 minutes
+
+  For real-time / frequently updated data:
+  → Use METHOD B (Google Sheets)
+    Most powerful, updates in seconds
+
+  For office/government environment with MS Office:
+  → Use METHOD C (OneDrive)
+    Works within existing Microsoft ecosystem

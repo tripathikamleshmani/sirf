@@ -1,0 +1,114 @@
+
+╔══════════════════════════════════════════════════════════════╗
+║   SHARE SIRF DASHBOARD TO MOBILE — Step by Step Guide      ║
+╚══════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ METHOD 1 — Same WiFi (No Internet / No Setup Needed)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  STEP 1: Open Command Prompt on your PC
+          Type:  ipconfig
+          Find:  IPv4 Address  →  example: 192.168.1.105
+
+  STEP 2: Run dashboard
+          python sirf_dashboard.py
+
+  STEP 3: On mobile (connected to same WiFi)
+          Open Chrome → type:  http://192.168.1.105:8050
+          (replace with your actual IP)
+
+  NOTE: PC and mobile MUST be on the same WiFi network.
+        Works on college/home WiFi. Does NOT need internet.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ METHOD 2 — Ngrok (Share Anywhere via Public Link)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  STEP 1: Download ngrok
+          Go to: https://ngrok.com/download
+          Download for Windows → Extract ngrok.exe
+          Place ngrok.exe in: D:\models\sirf dashboard\
+
+  STEP 2: Create free account
+          Go to: https://dashboard.ngrok.com/signup
+          Sign up free → Copy your Authtoken
+
+  STEP 3: Setup ngrok (one time only)
+          Open Anaconda Prompt → go to your folder:
+          cd D:\models\sirf dashboard
+          ngrok config add-authtoken YOUR_TOKEN_HERE
+
+  STEP 4: Run dashboard (keep this window open)
+          python sirf_dashboard.py
+
+  STEP 5: Open NEW Anaconda Prompt window
+          cd D:\models\sirf dashboard
+          ngrok http 8050
+
+  STEP 6: Ngrok will show a public URL like:
+          Forwarding  https://abc123.ngrok-free.app → localhost:8050
+
+  STEP 7: Send that URL to anyone on WhatsApp / Email
+          They open it on their phone → Dashboard loads!
+
+  NOTE: Free ngrok link works for ~2 hours per session.
+        Restart ngrok to get a new link.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ METHOD 3 — Deploy to Render.com (Permanent Public Link)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  This gives a PERMANENT link like: https://sirf-dashboard.onrender.com
+
+  STEP 1: Install git (if not installed)
+          https://git-scm.com/download/win
+
+  STEP 2: Create free account at https://github.com
+
+  STEP 3: Create these 2 extra files in your dashboard folder:
+
+  --- requirements.txt ---
+  dash
+  dash-bootstrap-components
+  plotly
+  pandas
+
+  --- Procfile (no extension) ---
+  web: python sirf_dashboard.py
+
+  STEP 4: Change last line in sirf_dashboard.py from:
+          app.run(debug=False, host="0.0.0.0", port=8050)
+          TO:
+          import os
+          port = int(os.environ.get("PORT", 8050))
+          app.run(debug=False, host="0.0.0.0", port=port)
+
+  STEP 5: Upload to GitHub:
+          Go to github.com → New Repository → Upload files
+
+  STEP 6: Go to https://render.com → Sign up free
+          New → Web Service → Connect GitHub repo
+          Build Command: pip install -r requirements.txt
+          Start Command: python sirf_dashboard.py
+          Click Deploy!
+
+  STEP 7: Render gives permanent URL — share with anyone!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ WHICH METHOD TO CHOOSE?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Same WiFi   → Best for classroom / office demo (instant, no setup)
+  Ngrok       → Best for quick sharing outside office (5 min setup)
+  Render.com  → Best for permanent sharing (takes 30 mins, free)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ MOBILE TIPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  - Use Google Chrome on mobile for best experience
+  - Voice Assistant works on Chrome mobile too
+  - Dashboard is mobile responsive — works on all screen sizes
+  - Pinch to zoom if needed
+  - Landscape mode gives better table view

@@ -33,7 +33,10 @@ MOBILE_URL = f"http://{LOCAL_IP}:{PORT}"
 #   "excel"    = read from Excel file (set EXCEL_PATH below)
 #   "gsheets"  = read from Google Sheets (set GSHEET_URL below)
 
-DATA_SOURCE = os.environ.get("DATA_SOURCE", "excel")
+if os.path.exists(EXCEL_PATH):
+    DATA_SOURCE = "excel"
+else:
+    DATA_SOURCE = "embedded"
 CLAUDE_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 # Path to Excel file (used when DATA_SOURCE = "excel")

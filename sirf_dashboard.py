@@ -33,10 +33,15 @@ MOBILE_URL = f"http://{LOCAL_IP}:{PORT}"
 #   "excel"    = read from Excel file (set EXCEL_PATH below)
 #   "gsheets"  = read from Google Sheets (set GSHEET_URL below)
 
+import os
+
+DATA_SOURCE = os.environ.get("DATA_SOURCE", "excel")
+EXCEL_PATH = os.environ.get("EXCEL_PATH", "SIRF_Inspection_Report.xlsx")
+
 if os.path.exists(EXCEL_PATH):
-    DATA_SOURCE = "excel"
+    print("Excel found:", EXCEL_PATH)
 else:
-    DATA_SOURCE = "embedded"
+    print("Excel NOT found:", EXCEL_PATH)
 CLAUDE_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 # Path to Excel file (used when DATA_SOURCE = "excel")
@@ -59,6 +64,13 @@ _B64 = "W3siaW5zdF9jb2RlIjogMzA1MywgInpvbmUiOiAiQnVuZGVsa2hhbmQiLCAiZGlzdHJpY3Qi
 def process_df(raw_df):
     """Apply grade logic and return processed dataframe."""
     raw_df = raw_df.fillna("")
+    
+    # Check if this is already processed data (has 'before' column)
+    if 'before' in raw_df.columns and 'after' in raw_df.columns:
+        # Already in correct format, just return
+        return raw_df
+    
+    # Otherwise, process from Excel format
     def eff_grade(row):
         try:
             s = str(row.get("Current Status","")).strip()
@@ -66,15 +78,18 @@ def process_df(raw_df):
             if s in ["Denied By Instituye","NO INSPECTION"] or ig in ["","nan"]: return "D"
             return ig
         except: return "D"
+    
     def norm_status(s):
         s = str(s).strip()
         if s in ["Denied By Instituye","NO INSPECTION"]: return "DENIED FOR INSPECTION"
         return s
+    
     go_map = {"A":1,"B":2,"C":3,"D":4}
     def direction(b,a):
         if go_map.get(a,0) > go_map.get(b,0): return "DOWNGRADE"
         elif go_map.get(a,0) < go_map.get(b,0): return "UPGRADE"
         return "NO CHANGE"
+    
     def cs(v):
         if isinstance(v,str):
             v = "".join(c for c in v if 32<=ord(c)<127)
@@ -83,20 +98,24 @@ def process_df(raw_df):
 
     if "INSTITUTE NAME" in raw_df.columns:
         # Raw Excel format
-        raw_df["after"]  = raw_df.apply(eff_grade, axis=1)
+        raw_df["after"] = raw_df.apply(eff_grade, axis=1)
         raw_df["before"] = raw_df["GRADE"].astype(str).str.strip()
         recs = []
         for _, r in raw_df.iterrows():
-            b = r["before"]; a = r["after"]
+            b = r["before"]
+            a = r["after"]
             tm = float(r["Total Marks"]) if isinstance(r.get("Total Marks",0),(int,float)) else 0
             im = float(r["Inspection Total Marks"]) if isinstance(r.get("Inspection Total Marks",0),(int,float)) else 0
             recs.append({
                 "inst_code": int(r["INST Code"]) if r.get("INST Code","")!="" else 0,
-                "zone": cs(str(r.get("Zone",""))), "district": cs(str(r.get("District",""))),
+                "zone": cs(str(r.get("Zone",""))),
+                "district": cs(str(r.get("District",""))),
                 "inst_type": cs(str(r.get("INST ","")).strip()),
                 "name": cs(str(r.get("INSTITUTE NAME","")).strip()),
-                "before": b, "sirf_marks": round(tm,2),
-                "after": a, "insp_marks": round(im,2),
+                "before": b,
+                "sirf_marks": round(tm,2),
+                "after": a,
+                "insp_marks": round(im,2),
                 "delta": round(im-tm,2),
                 "direction": direction(b,a),
                 "path": f"{b}->{a}",
@@ -104,7 +123,7 @@ def process_df(raw_df):
             })
         return pd.DataFrame(recs)
     else:
-        # Already processed format
+        # Unexpected format - return as is
         return raw_df
 
 def load_data():
@@ -786,3 +805,4 @@ if __name__=="__main__":
     print("="*55)
     print()
     app.run(debug=False,host="0.0.0.0",port=PORT)
+server = app.server
